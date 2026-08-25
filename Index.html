@@ -1,0 +1,706 @@
+```html
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Interactivo: Prueba de Hipótesis Z</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#035485',
+                            900: '#0c2e4e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom smooth scrollbar & console feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .math-font {
+            font-family: 'Cambria Math', 'Georgia', 'Times New Roman', serif;
+        }
+    </style>
+</head>
+<body class="min-h-full flex flex-col font-sans text-slate-800 antialiased bg-slate-50">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-brand-500/20">
+                    Z
+                </div>
+                <div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 border border-brand-100">
+                        Tutorial Interactivo • Visualización Estadistica
+                    </span>
+                    <h1 class="text-xl font-bold text-slate-900 leading-tight">Prueba de Hipótesis: Guion Comercial WhatsApp</h1>
+                </div>
+            </div>
+            <div class="text-xs sm:text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                <span class="font-semibold text-slate-700">Muestreo:</span> Test Z para una media muestral ($\mu_0 = 12\%$)
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Context & Hypothesis Definition Banner -->
+        <div class="mb-8 bg-gradient-to-r from-brand-900 via-slate-900 to-slate-800 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="max-w-3xl relative z-10">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-brand-100 mb-2">Escenario de Negocio</h2>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-white mb-4">¿El nuevo guion de venta consultiva aumenta la conversión?</h3>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                    La campaña tradicional de WhatsApp registra históricamente un <strong class="text-white">12% de conversión</strong> ($\mu_0 = 12\%$). El equipo comercial probó un nuevo guion en varios lotes de mensajes. Deseamos determinar si el incremento observado en los lotes es <span class="text-brand-100 underline decoration-brand-500 underline-offset-4 font-semibold">estadísticamente significativo</span> o si es un simple efecto del azar.
+                </p>
+
+                <!-- Formulated Hypotheses -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs uppercase font-bold text-slate-300">Hipótesis Nula</span>
+                            <span class="text-xs font-mono bg-slate-800/80 px-2 py-0.5 rounded text-slate-300">H₀</span>
+                        </div>
+                        <p class="text-lg font-bold text-white math-font">H₀: μ = 12%</p>
+                        <p class="text-xs text-slate-300 mt-1">El nuevo guion <em>no cambia</em> la efectividad (la tasa promedio sigue siendo igual o menor a 12%).</p>
+                    </div>
+
+                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-brand-500/40">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs uppercase font-bold text-emerald-300">Hipótesis Alternativa</span>
+                            <span class="text-xs font-mono bg-emerald-950/80 px-2 py-0.5 rounded text-emerald-300">H₁</span>
+                        </div>
+                        <p class="text-lg font-bold text-white math-font">H₁: μ &gt; 12%</p>
+                        <p class="text-xs text-slate-300 mt-1">El nuevo guion <em>aumenta</em> la tasa de conversión (Prueba de una sola cola a la derecha).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 Column Workspace Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <!-- LEFT COLUMN: Experiment Controls & Sample Generator -->
+            <section class="lg:col-span-5 space-y-6">
+                
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            1. Configuración del Experimento
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Establece los parámetros de rigor estadístico y los datos observados.</p>
+                    </div>
+
+                    <!-- Significance Level Selector -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                            Nivel de Significancia (α - Alfa)
+                        </label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="alpha" value="0.01" class="peer sr-only" onchange="runAnalysis()">
+                                <div class="text-center p-2.5 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-brand-50 peer-checked:border-brand-600 peer-checked:text-brand-700 transition">
+                                    <div class="text-sm font-bold">0.01</div>
+                                    <div class="text-[10px] text-slate-500 peer-checked:text-brand-600">Conf. 99%</div>
+                                </div>
+                            </label>
+                            
+                            <label class="cursor-pointer">
+                                <input type="radio" name="alpha" value="0.05" checked class="peer sr-only" onchange="runAnalysis()">
+                                <div class="text-center p-2.5 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-brand-50 peer-checked:border-brand-600 peer-checked:text-brand-700 transition relative">
+                                    <span class="absolute -top-2 -right-1 bg-brand-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full">Estándar</span>
+                                    <div class="text-sm font-bold">0.05</div>
+                                    <div class="text-[10px] text-slate-500 peer-checked:text-brand-600">Conf. 95%</div>
+                                </div>
+                            </label>
+
+                            <label class="cursor-pointer">
+                                <input type="radio" name="alpha" value="0.10" class="peer sr-only" onchange="runAnalysis()">
+                                <div class="text-center p-2.5 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-brand-50 peer-checked:border-brand-600 peer-checked:text-brand-700 transition">
+                                    <div class="text-sm font-bold">0.10</div>
+                                    <div class="text-[10px] text-slate-500 peer-checked:text-brand-600">Conf. 90%</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Fixed Baseline Conversion Reference -->
+                    <div>
+                        <label for="mu0" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                            Tasa de referencia histórica (μ₀)
+                        </label>
+                        <div class="relative rounded-xl">
+                            <input type="number" id="mu0" value="12" readonly disabled
+                                class="w-full bg-slate-100 text-slate-600 border border-slate-200 rounded-xl py-2.5 px-3 font-semibold text-sm cursor-not-allowed">
+                            <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-bold">% Conversión</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">Valor histórico de la campaña tradicional con guion previo.</p>
+                    </div>
+
+                    <!-- Sample Data Generator Box -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Generar Muestra Aleatoria</span>
+                            <span class="text-[11px] text-brand-600 font-medium">Simulador</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="targetMean" class="block text-[11px] text-slate-600 font-medium mb-1">Alrededor de (%):</label>
+                                <input type="number" id="targetMean" value="16" min="1" max="100" step="0.5"
+                                    class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label for="sampleCount" class="block text-[11px] text-slate-600 font-medium mb-1">Nº de Lotes (n):</label>
+                                <input type="number" id="sampleCount" value="20" min="5" max="100" step="1"
+                                    class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <button onclick="generateRandomSample()" type="button" 
+                            class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Generar datos al azar
+                        </button>
+                    </div>
+
+                    <!-- Raw Data Textarea -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="sampleInput" class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                Muestra Observada (% conversión por lote)
+                            </label>
+                            <span class="text-[10px] text-slate-400">Valores sep. por comas</span>
+                        </div>
+                        <textarea id="sampleInput" rows="4" 
+                            class="w-full font-mono text-xs bg-slate-900 text-emerald-400 p-3 rounded-xl border border-slate-700 focus:ring-2 focus:ring-brand-500 focus:outline-none leading-relaxed"
+                            placeholder="Ej. 14.5, 16.2, 12.8, 18.0, 15.1 ...">15.2, 16.8, 14.1, 17.5, 15.9, 13.8, 18.2, 16.0, 14.9, 17.1, 15.5, 16.4, 14.2, 18.7, 15.0, 16.3, 17.0, 13.9, 16.5, 15.8</textarea>
+                        <p class="text-[11px] text-slate-500 mt-1">Puedes editar manualmente los valores en el recuadro superior.</p>
+                    </div>
+
+                    <!-- Main Calculate Button -->
+                    <button onclick="runAnalysis()" type="button"
+                        class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-brand-600/30 hover:shadow-brand-600/40 transition transform active:scale-[0.99] flex items-center justify-center gap-2 text-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        Analizar Datos y Tomar Decisión
+                    </button>
+
+                </div>
+
+            </section>
+
+            <!-- RIGHT COLUMN: Results Cards & Step-by-Step Math Execution -->
+            <section class="lg:col-span-7 space-y-6">
+
+                <!-- Primary Results Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    <!-- P-Value Card -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Valor P Calculado</span>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span id="resPValue" class="text-4xl font-black text-emerald-600 tracking-tight">0.0000</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Probabilidad de observar estos resultados por azar si $H_0$ fuera cierta.</p>
+                    </div>
+
+                    <!-- Alpha Threshold Card -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tu Nivel Alfa (α)</span>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span id="resAlpha" class="text-4xl font-black text-slate-800 tracking-tight">0.05</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Tolerancia máxima a cometer un error Tipo I (Falso positivo).</p>
+                    </div>
+
+                </div>
+
+                <!-- Console Comparison Block -->
+                <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 text-slate-200 font-mono text-xs sm:text-sm shadow-xl space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 text-slate-400">
+                        <span class="flex items-center gap-1.5 font-sans font-bold text-xs uppercase tracking-wider">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Evaluador de Desigualdad
+                        </span>
+                        <span class="text-[11px]">Prueba Unilateral Derecha</span>
+                    </div>
+
+                    <div id="consoleComparison" class="py-2 text-base font-bold tracking-wide">
+                        <!-- Dynamically populated string -->
+                        p-valor (0.0001) ≤ α (0.0500)
+                    </div>
+
+                    <div id="consoleStatusText" class="text-slate-400 text-xs font-sans border-t border-slate-800/60 pt-2">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Decision & Business Conclusion Box -->
+                <div id="decisionCard" class="rounded-2xl p-6 border transition-all duration-300 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <div id="decisionIcon" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                            <!-- Icon populated dynamically -->
+                        </div>
+                        <div>
+                            <span id="decisionBadge" class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold mb-2">
+                                RECHAZAR H₀
+                            </span>
+                            <h3 id="decisionTitle" class="text-lg font-bold text-slate-900">
+                                El nuevo guion aumenta significativamente la conversión
+                            </h3>
+                            <p id="decisionDescription" class="text-xs sm:text-sm text-slate-700 mt-2 leading-relaxed">
+                                <!-- Dynamically populated conclusion using balanced statistical tone -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION: Step-by-Step Mathematical Procedure -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+                            El Procedimiento Matemático (Prueba Z)
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Desglose paso a paso de las fórmulas y cálculos estadísticos aplicados.</p>
+                    </div>
+
+                    <!-- Step 1: Sample Statistics -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-700 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 text-[11px] flex items-center justify-center font-bold">1</span>
+                            Estadísticas de la Muestra
+                        </h3>
+                        <div class="grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-semibold block uppercase">Tamaño (n)</span>
+                                <span id="statN" class="text-base font-extrabold text-slate-800">20</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-semibold block uppercase">Media (x̄)</span>
+                                <span id="statMean" class="text-base font-extrabold text-slate-800">15.97%</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 font-semibold block uppercase">Desv. Est. (s)</span>
+                                <span id="statStd" class="text-base font-extrabold text-slate-800">1.34%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Standard Error Calculation -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-700 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 text-[11px] flex items-center justify-center font-bold">2</span>
+                            Cálculo del Error Estándar (SE)
+                        </h3>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+                            <p class="text-slate-600">El Error Estándar mide la variabilidad esperada de la media muestral:</p>
+                            <div class="font-mono bg-white p-3 rounded-lg border border-slate-200 text-slate-800 flex flex-wrap items-center justify-between gap-2">
+                                <span>SE = s / √n</span>
+                                <span id="calcSEFormula" class="font-bold text-brand-700">SE = 1.34 / √20 = 0.300%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Z Score Calculation -->
+                    <div class="space-y-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-700 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 text-[11px] flex items-center justify-center font-bold">3</span>
+                            Cálculo del Estadístico Z
+                        </h3>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+                            <p class="text-slate-600">Representa a cuántas desviaciones estándar está la media observada de la hipótesis nula ($\mu_0 = 12\%$):</p>
+                            <div class="font-mono bg-white p-3 rounded-lg border border-slate-200 text-slate-800 flex flex-wrap items-center justify-between gap-2">
+                                <span>Z = (x̄ − μ₀) / SE</span>
+                                <span id="calcZFormula" class="font-bold text-brand-700">Z = (15.97 - 12.00) / 0.300 = +13.23</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Visualizing P-value & Bell Curve -->
+                    <div class="space-y-3 pt-2">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-700 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 text-[11px] flex items-center justify-center font-bold">4</span>
+                            ¿De dónde sale el Valor P?
+                        </h3>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Bajo la Distribución Normal Estándar $N(0,1)$, el <strong>Valor P</strong> es el área sombreada en la cola derecha a partir del valor $Z$ calculado. Representa la probabilidad $P(Z > Z_{calc})$. Si $Z$ es muy grande, esta cola es extremadamente pequeña.
+                        </p>
+
+                        <!-- Interactive Canvas for Normal Distribution Curve -->
+                        <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 space-y-2">
+                            <div class="flex items-center justify-between text-xs text-slate-300">
+                                <span class="font-mono text-emerald-400">Curva Normal Estándar N(0,1)</span>
+                                <span id="canvasTailLabel" class="font-mono text-slate-400">Área sombreada: Cola Derecha</span>
+                            </div>
+                            
+                            <div class="relative w-full aspect-[2/1] sm:aspect-[2.5/1]">
+                                <canvas id="bellCurveCanvas" class="w-full h-full block rounded-lg"></canvas>
+                            </div>
+
+                            <div class="flex justify-between items-center text-[11px] text-slate-400 pt-1 border-t border-slate-800">
+                                <span>Z = 0 (μ₀ = 12%)</span>
+                                <span id="canvasZValue" class="font-mono text-amber-400 font-bold">Z_calc = +0.00</span>
+                                <span>P(Z > Z_calc) = <strong id="canvasPValue" class="text-emerald-400 font-mono">0.0000</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4">
+            Plantilla Reutilizable de Análisis Estadístico Comercial • Basado en el Test Z de una muestra
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        
+        /**
+         * Standard Normal Cumulative Distribution Function (CDF)
+         * Abramowitz and Stegun approximation (formula 26.2.17)
+         * Accuracy: ~1e-7
+         */
+        function normalCDF(z) {
+            if (z < -6.0) return 0.0;
+            if (z > 6.0) return 1.0;
+
+            const b1 = 0.319381530;
+            const b2 = -0.356563782;
+            const b3 = 1.781477937;
+            const b4 = -1.821255978;
+            const b5 = 1.330274429;
+            const p  = 0.2316419;
+
+            const absZ = Math.abs(z);
+            const t = 1.0 / (1.0 + p * absZ);
+            const pdf = (1.0 / Math.sqrt(2.0 * Math.PI)) * Math.exp(-0.5 * absZ * absZ);
+            
+            let cdf = 1.0 - pdf * t * (b1 + t * (b2 + t * (b3 + t * (b4 + t * b5))));
+
+            return z >= 0 ? cdf : 1.0 - cdf;
+        }
+
+        /**
+         * Calculates sample statistics:
+         * - Mean
+         * - Sample Standard Deviation (s with n-1)
+         */
+        function calculateStats(arr) {
+            const n = arr.length;
+            if (n === 0) return { n: 0, mean: 0, stdDev: 0 };
+            
+            const mean = arr.reduce((sum, v) => sum + v, 0) / n;
+            
+            if (n === 1) return { n, mean, stdDev: 0 };
+
+            const variance = arr.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / (n - 1);
+            const stdDev = Math.sqrt(variance);
+
+            return { n, mean, stdDev };
+        }
+
+
+        /**
+         * Generates a random set of sample batch conversion rates
+         * centered around a target percentage with random noise.
+         */
+        function generateRandomSample() {
+            const target = parseFloat(document.getElementById('targetMean').value) || 16;
+            const n = parseInt(document.getElementById('sampleCount').value) || 20;
+
+            let sample = [];
+            for (let i = 0; i < n; i++) {
+                // Generate normal-ish random noise around target with ~2% std deviation
+                const u1 = Math.random();
+                const u2 = Math.random();
+                const z0 = Math.sqrt(-2.0 * Math.log(u1 || 0.001)) * Math.cos(2.0 * Math.PI * u2);
+                let val = target + z0 * 2.1;
+                if (val < 0) val = 0.5;
+                sample.push(parseFloat(val.toFixed(1)));
+            }
+
+            document.getElementById('sampleInput').value = sample.join(', ');
+            runAnalysis();
+        }
+
+        /**
+         * Reads input data, executes Z-Test calculations, updates UI, and redraws bell curve.
+         */
+        function runAnalysis() {
+            // 1. Get reference mu0 and alpha
+            const mu0 = parseFloat(document.getElementById('mu0').value) || 12.0;
+            const alphaElems = document.getElementsByName('alpha');
+            let alpha = 0.05;
+            for (let elem of alphaElems) {
+                if (elem.checked) {
+                    alpha = parseFloat(elem.value);
+                    break;
+                }
+            }
+
+            // 2. Parse text area sample array
+            const rawText = document.getElementById('sampleInput').value;
+            const sample = rawText.split(',')
+                .map(v => parseFloat(v.trim()))
+                .filter(v => !isNaN(v));
+
+            if (sample.length < 2) {
+                alert('Por favor ingresa al menos 2 números válidos separados por comas.');
+                return;
+            }
+
+            // 3. Compute stats
+            const { n, mean, stdDev } = calculateStats(sample);
+            
+            // Standard Error
+            const se = stdDev / Math.sqrt(n);
+            
+            // Z score (one-tailed right)
+            // Note: If standard deviation is 0 (identical numbers), avoid div by zero
+            const zScore = se > 0 ? (mean - mu0) / se : 0;
+
+            // P-value for one-tailed right test: P(Z > zScore)
+            const pValue = 1 - normalCDF(zScore);
+
+            // 4. Update Result Displays
+            document.getElementById('resPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+            document.getElementById('resAlpha').innerText = alpha.toFixed(2);
+
+            // Console comparison box
+            const consoleComp = document.getElementById('consoleComparison');
+            const consoleStatus = document.getElementById('consoleStatusText');
+
+            const isRejectH0 = pValue <= alpha;
+
+            if (isRejectH0) {
+                consoleComp.innerHTML = `<span class="text-emerald-400">P-Valor (${pValue < 0.0001 ? '<0.0001' : pValue.toFixed(4)}) ≤ α (${alpha.toFixed(2)})</span>`;
+                consoleStatus.innerText = "Resultado: La probabilidad p es menor o igual a alfa. Existe evidencia estadísticamente significativa.";
+            } else {
+                consoleComp.innerHTML = `<span class="text-amber-400">P-Valor (${pValue.toFixed(4)}) > α (${alpha.toFixed(2)})</span>`;
+                consoleStatus.innerText = "Resultado: La probabilidad p es mayor a alfa. No existe suficiente evidencia estadística para descartar la hipótesis nula.";
+            }
+
+            // Decision Card Styling & Wording (Nuanced business interpretation)
+            const decisionCard = document.getElementById('decisionCard');
+            const decisionBadge = document.getElementById('decisionBadge');
+            const decisionTitle = document.getElementById('decisionTitle');
+            const decisionDesc = document.getElementById('decisionDescription');
+            const decisionIcon = document.getElementById('decisionIcon');
+
+            if (isRejectH0) {
+                decisionCard.className = "rounded-2xl p-6 border transition-all duration-300 shadow-sm bg-emerald-50 border-emerald-200 text-emerald-950";
+                decisionBadge.className = "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold mb-2 bg-emerald-200 text-emerald-800 border border-emerald-300";
+                decisionBadge.innerText = "RECHAZAR H₀ (Resultado Significativo)";
+                
+                decisionTitle.innerText = "Los datos sugieren que el nuevo guion SÍ incrementa la tasa de conversión";
+                decisionDesc.innerHTML = `Con un nivel de significancia de <strong>α = ${(alpha*100)}%</strong>, el p-valor de <strong>${pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4)}</strong> demuestra que un promedio muestral de <strong>${mean.toFixed(2)}%</strong> es sumamente improbable de obtener por puro azar bajo la campaña tradicional (12%). <br><br><em>Nota de rigor:</em> Los datos apoyan la adopción del nuevo guion comercial, aunque recordamos que el análisis se basa en una muestra representativa de ${n} lotes y no en la totalidad futura de mensajes.`;
+                
+                decisionIcon.className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-emerald-600 text-white";
+                decisionIcon.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            } else {
+                decisionCard.className = "rounded-2xl p-6 border transition-all duration-300 shadow-sm bg-slate-100 border-slate-300 text-slate-800";
+                decisionBadge.className = "inline-block px-2.5 py-0.5 rounded-full text-xs font-bold mb-2 bg-slate-200 text-slate-700 border border-slate-300";
+                decisionBadge.innerText = "NO RECHAZAR H₀ (No Significativo)";
+                
+                decisionTitle.innerText = "No hay suficiente evidencia para afirmar que el nuevo guion sea superior";
+                decisionDesc.innerHTML = `Con un nivel de significancia de <strong>α = ${(alpha*100)}%</strong>, el p-valor obtenido (<strong>${pValue.toFixed(4)}</strong>) supera el umbral de tolerancia. La diferencia observada entre la media muestral (<strong>${mean.toFixed(2)}%</strong>) y la tasa histórica (12.00%) podría explicarse por fluctuaciones aleatorias del muestreo. <br><br><em>Recomendación:</em> Mantener la cautela o aumentar el tamaño de la muestra (n) para obtener un análisis con mayor potencia estadística antes de tomar decisiones operativas masivas.`;
+                
+                decisionIcon.className = "w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-slate-500 text-white";
+                decisionIcon.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+            }
+
+            // 5. Update Step-by-Step Mathematical Text
+            document.getElementById('statN').innerText = n;
+            document.getElementById('statMean').innerText = `${mean.toFixed(2)}%`;
+            document.getElementById('statStd').innerText = `${stdDev.toFixed(2)}%`;
+
+            document.getElementById('calcSEFormula').innerText = `SE = ${stdDev.toFixed(2)} / √${n} = ${se.toFixed(3)}%`;
+            document.getElementById('calcZFormula').innerText = `Z = (${mean.toFixed(2)} - ${mu0.toFixed(2)}) / ${se.toFixed(3)} = ${zScore >= 0 ? '+' : ''}${zScore.toFixed(2)}`;
+
+            document.getElementById('canvasZValue').innerText = `Z_calc = ${zScore >= 0 ? '+' : ''}${zScore.toFixed(2)}`;
+            document.getElementById('canvasPValue').innerText = pValue < 0.0001 ? '< 0.0001' : pValue.toFixed(4);
+
+            // 6. Redraw Bell Curve
+            drawBellCurve(zScore, isRejectH0);
+        }
+
+
+        /**
+         * Draws Gaussian bell curve on HTML5 Canvas with right tail shading
+         */
+        function drawBellCurve(zCalculated, isReject) {
+            const canvas = document.getElementById('bellCurveCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            
+            // Adjust internal resolution to match container width
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * (window.devicePixelRatio || 1);
+            canvas.height = rect.height * (window.devicePixelRatio || 1);
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const padding = 30;
+            const plotWidth = width - padding * 2;
+            const plotHeight = height - padding * 2;
+            const baselineY = height - padding;
+
+            // X scale: Z values from -3.5 to +3.5
+            const minZ = -3.5;
+            const maxZ = 3.5;
+
+            function zToX(z) {
+                return padding + ((z - minZ) / (maxZ - minZ)) * plotWidth;
+            }
+
+            // Standard Normal Probability Density Function
+            function pdf(z) {
+                return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * z * z);
+            }
+
+            const maxPDF = pdf(0); // Peak height (~0.3989)
+
+            function yToCanvas(val) {
+                return baselineY - (val / maxPDF) * (plotHeight * 0.85);
+            }
+
+            // 1. Draw Shaded Right-Tail Area P(Z > zCalculated)
+            const clampedZ = Math.max(minZ, Math.min(maxZ, zCalculated));
+            ctx.beginPath();
+            ctx.moveTo(zToX(clampedZ), baselineY);
+
+            const step = 0.05;
+            for (let z = clampedZ; z <= maxZ; z += step) {
+                ctx.lineTo(zToX(z), yToCanvas(pdf(z)));
+            }
+            ctx.lineTo(zToX(maxZ), baselineY);
+            ctx.closePath();
+
+            // Highlight right tail with green or amber
+            ctx.fillStyle = isReject ? 'rgba(16, 185, 129, 0.35)' : 'rgba(245, 158, 11, 0.35)';
+            ctx.fill();
+
+            // 2. Draw Main Curve Line
+            ctx.beginPath();
+            for (let z = minZ; z <= maxZ; z += step) {
+                const x = zToX(z);
+                const y = yToCanvas(pdf(z));
+                if (z === minZ) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = '#38bdf8'; // Sky blue line
+            ctx.lineWidth = Math.max(2, 2.5 * (window.devicePixelRatio || 1));
+            ctx.stroke();
+
+            // 3. Draw Axis Line (Baseline)
+            ctx.beginPath();
+            ctx.moveTo(padding, baselineY);
+            ctx.lineTo(width - padding, baselineY);
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // 4. Draw Center Line (Z = 0)
+            const centerX = zToX(0);
+            ctx.beginPath();
+            ctx.setLineDash([4, 4]);
+            ctx.moveTo(centerX, baselineY);
+            ctx.lineTo(centerX, yToCanvas(maxPDF));
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset dash
+
+            // Center Label
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = `${Math.max(10, 11 * (window.devicePixelRatio || 1))}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('Z = 0', centerX, baselineY + 16 * (window.devicePixelRatio || 1));
+
+            // 5. Draw Calculated Z Line Marker
+            if (zCalculated >= minZ && zCalculated <= maxZ) {
+                const calcX = zToX(zCalculated);
+                ctx.beginPath();
+                ctx.moveTo(calcX, baselineY);
+                ctx.lineTo(calcX, yToCanvas(pdf(zCalculated)) - 10);
+                ctx.strokeStyle = isReject ? '#10b981' : '#f59e0b';
+                ctx.lineWidth = Math.max(2, 2.5 * (window.devicePixelRatio || 1));
+                ctx.stroke();
+
+                // Circle marker at point on curve
+                ctx.beginPath();
+                ctx.arc(calcX, yToCanvas(pdf(zCalculated)), 4 * (window.devicePixelRatio || 1), 0, 2 * Math.PI);
+                ctx.fillStyle = isReject ? '#10b981' : '#f59e0b';
+                ctx.fill();
+
+                // Z Value Label Above Marker
+                ctx.fillStyle = isReject ? '#34d399' : '#fbbf24';
+                ctx.font = `bold ${Math.max(10, 11 * (window.devicePixelRatio || 1))}px sans-serif`;
+                ctx.textAlign = 'center';
+                const labelText = `Z = ${zCalculated.toFixed(2)}`;
+                const labelY = Math.max(20, yToCanvas(pdf(zCalculated)) - 12);
+                ctx.fillText(labelText, calcX, labelY);
+            }
+        }
+
+        // Initialize application on window load and set up window resize handler
+        window.onload = function() {
+            runAnalysis();
+            
+            // Handle responsive canvas redraw on window resize
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    runAnalysis();
+                }, 100);
+            });
+        };
+    </script>
+</body>
+</html>
+```
